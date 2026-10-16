@@ -1,0 +1,27 @@
+name: CI - Bot Discord
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  lint-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Compile
+        run: python -m compileall -q main.py config core models cogs utils
+      - name: Validate compose
+        run: docker compose config
+      - name: Build image
+        run: docker build -t discord-bot:ci .
+      - name: Tests
+        run: python -m pytest tests -q --no-header -v

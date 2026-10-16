@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: discord-bot-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-bot}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bot_secret_troque_aqui}
+      POSTGRES_DB: ${POSTGRES_DB:-botdb}
+      TZ: America/Sao_Paulo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Postgres cabe no free tier Oracle (~50-100MB RAM)
+    # Nao exponha a porta 5432 p/ fora - so o bot acessa internamente
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bot} -d ${POSTGRES_DB:-botdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  discord-bot:
+    build: .
+    container_name: discord-bot
+    restart: unless-stopped  # <- reinicia sozinho na VPS (reboot / crash)
+    env_file:
+      - .env
+    environment:
+      - TZ=America/Sao_Paulo
+      # DATABASE_URL aponta p/ o servico 'db' interno
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-bot}:${POSTGRES_PASSWORD:-bot_secret_troque_aqui}@db:5432/${POSTGRES_DB:-botdb}
+    volumes:
+      - ./logs:/app/logs  # logs persistem fora do container
+    depends_on:
+      db:
+        condition: service_healthy
+    # Sem portas - bot usa gateway outbound, nao precisa expor nada
+
+  backup:
+    image: postgres:16-alpine
+    container_name: discord-bot-backup
+    restart: "no"
+    profiles: ["backup"]
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:-bot_secret_troque_aqui}
+    volumes:
+      - ./backups:/backups
+    entrypoint: >
+      sh -c "pg_dump -h db -U $${POSTGRES_USER:-bot} $${POSTGRES_DB:-botdb} | gzip > /backups/botdb_$$(date +%F_%H-%M).sql.gz && ls -t /backups/*.gz | tail -n +8 | xargs -r rm -- && echo backup_OK"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:  # dados do Postgres persistem no reboot
+

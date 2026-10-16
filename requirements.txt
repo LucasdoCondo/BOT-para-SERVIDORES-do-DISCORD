@@ -1,0 +1,26 @@
+# Discord
+discord.py>=2.4.0
+
+# IA gratuita - Google Gemini
+google-generativeai>=0.7.0
+
+# Config / env
+python-dotenv>=1.0.0
+
+# Banco - SQLModel + Postgres async (robusto p/ VPS)
+sqlmodel>=0.0.22
+asyncpg>=0.29.0
+greenlet>=3.0.0
+alembic>=1.13.0
+psycopg[binary]>=3.1.0
+
+# Dashboard web interno (FastAPI - opcional)
+fastapi>=0.115.0
+uvicorn>=0.34.0
+
+# Áudio / YouTube (Music Lo-Fi)
+yt-dlp>=2024.0.0
+PyNaCl>=1.5.0
+
+# Utilitário de sistema (usado por cogs.admin_tasks: status_sistema)
+psutil>=5.9.0

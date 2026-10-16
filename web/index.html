@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discord Bot Monitor</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --amber: #f59e0b;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
+    h1 { font-size: 1.4rem; margin-bottom: 4px; }
+    .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+    .card { background: var(--card); border-radius: var(--radius); padding: 16px 18px; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+    .card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .card .value { font-size: 1.4rem; font-weight: 700; margin-top: 4px; }
+    .card .sub { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .stat { padding: 12px 14px; border-radius: var(--radius); background: var(--card); }
+    .stat .k { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .stat .v { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.08); font-size: .88rem; }
+    th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: .75rem; }
+    tr:last-child td { border-bottom: none; }
+    footer { margin-top: 16px; color: var(--muted); font-size: .8rem; text-align: center; }
+    @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>🤖 Discord Bot Monitor</h1>
+  <p class="sub">Status do bot, banco de dados e cache IA</p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="label">Status do Bot</div>
+      <div class="value" id="statusValue">—</div>
+      <div class="sub" id="statusSub">Verificando...</div>
+    </div>
+    <div class="card">
+      <div class="label">Uptime</div>
+      <div class="value" id="uptimeValue">—</div>
+      <div class="sub">Desde o último boot</div>
+    </div>
+    <div class="card">
+      <div class="label">Banco de Dados</div>
+      <div class="value" id="dbValue">—</div>
+      <div class="sub" id="dbSub">Conectando...</div>
+    </div>
+    <div class="card">
+      <div class="label">Servidores</div>
+      <div class="value" id="guildsValue">—</div>
+      <div class="sub">Servidores ativos</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="margin-top:16px; gap:14px;">
+    <div class="card">
+      <div class="label">Cache IA Total</div>
+      <div class="value" id="cacheTotal">0</div>
+      <div class="sub">Itens armazenados</div>
+    </div>
+    <div class="card">
+      <div class="label">Cache Expirado</div>
+      <div class="value" id="cacheExpired">0</div>
+      <div class="sub">Itens inválidos</div>
+    </div>
+    <div class="card">
+      <div class="label">Idade do próximo expirado</div>
+      <div class="value" id="cacheAge">—</div>
+      <div class="sub">Ajuda a planejar rotinas de limpeza.</div>
+    </div>
+    <div class="card">
+      <div class="label">Lateness</div>
+      <div class="value" id="cacheLateness">—</div>
+      <div class="sub">Performance da rotina de limpeza.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px;">
+    <h2 style="font-size:.9rem; color:var(--muted);">Cache por chave</h2>
+    <table id="cacheTable">
+      <thead>
+        <tr><th>Chave</th><th>Resposta</th><th>Hits</th><th>Vencimento</th></tr>
+      </thead>
+      <tbody id="cacheBody"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <a href="/healthz" target="_blank">/healthz</a> · <a href="/metrics" target="_blank">/metrics</a> · <a href="/cache/stats" target="_blank">/cache/stats</a>
+  </footer>
+</body>
+</html>
