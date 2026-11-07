@@ -39,6 +39,15 @@ class Tickets(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def _reopen_ticket(self, ticket_id: int) -> None:
+        async with get_session() as s:
+            ticket = await s.get(Ticket, ticket_id)
+            if ticket:
+                ticket.status = "open"
+                ticket.closed_at = None
+                s.add(ticket)
+                await s.commit()
+
     async def _staff_roles(self, guild):
         roles = []
         for rid in settings.TICKET_STAFF_ROLES:
@@ -103,6 +112,7 @@ class Tickets(commands.Cog):
         try:
             await ch.delete(reason=f"Fechado por {interaction.user}")
         except Exception:
+            await self._reopen_ticket(t.id)
             await interaction.followup.send("Erro ao fechar.", ephemeral=True)
     @commands.hybrid_command(name="ticket", description="Abre ticket.")
     @commands.guild_only()
@@ -143,16 +153,27 @@ class Tickets(commands.Cog):
         async with get_session() as s:
             q = await s.exec(select(Ticket).where(Ticket.guild_id == ctx.guild.id, Ticket.channel_id == ch.id, Ticket.status == "open"))
             t = q.first()
-            if t:
-                from datetime import datetime
-                t.status = "closed"
-                t.closed_at = datetime.utcnow()
-                s.add(t)
-                await s.commit()
+        if not t:
+            return await ctx.send("Ticket aberto não encontrado.")
+        staff = ctx.author.guild_permissions.manage_channels or any(
+            str(role.id) in settings.TICKET_STAFF_ROLES for role in ctx.author.roles
+        )
+        if ctx.author.id != t.user_id and not staff:
+            return await ctx.send("Somente o dono do ticket ou a equipe pode fechá-lo.")
+        from datetime import datetime, timezone
+        async with get_session() as s:
+            ticket = await s.get(Ticket, t.id)
+            if not ticket or ticket.status != "open":
+                return await ctx.send("Este ticket já foi fechado.")
+            ticket.status = "closed"
+            ticket.closed_at = datetime.now(timezone.utc).replace(tzinfo=None)
+            s.add(ticket)
+            await s.commit()
         try:
             await ctx.send("Fechando...")
             await ch.delete(reason=f"Fechado por {ctx.author}")
         except Exception as e:
+            await self._reopen_ticket(t.id)
             await ctx.send(embed=error_embed("Ticket", f"Erro: {e}"))
 
 
