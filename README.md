@@ -40,7 +40,8 @@ Em https://discord.com/developers/applications → seu App → **Bot**:
 ## 🚀 Quickstart Local (Windows)
 
 ```powershell
-cd "c:\Users\Administrador\Documents\LDC\PROJETOS\BOTs DISCORD"
+git clone https://github.com/LucasdoCondo/BOT-para-SERVIDORES-do-DISCORD.git
+cd BOT-para-SERVIDORES-do-DISCORD
 copy .env.example .env
 notepad .env   # preencha DISCORD_TOKEN e GEMINI_API_KEY
 pip install -r requirements.txt
@@ -105,7 +106,7 @@ docker --version && docker compose version
 ### 3. Subir o bot
 
 ```bash
-git clone <SEU-REPO> bot && cd bot
+git clone https://github.com/LucasdoCondo/BOT-para-SERVIDORES-do-DISCORD.git bot && cd bot
 cp .env.example .env && nano .env   # preencha DISCORD_TOKEN + GEMINI_API_KEY
 mkdir -p logs
 docker compose up -d --build
@@ -285,8 +286,7 @@ Filtro: deleta msg com palavra de `BANNED_WORDS` (ignora quem tem Gerenciar Mens
 ├── docker-compose.yml   # db + bot + backup(profile), pgdata
 ├── alembic.ini + alembic/  # migrations versionadas (0001_initial)
 ├── scripts/backup.sh    # pg_dump + gzip + prune 7
-├── .env.example         # + AI_PERSONA, TICKET_*, etc.
-├── .env.example         # DATABASE_URL, POSTGRES_*, XP_*, WARN_*, WELCOME_*, AUTOMOD_*, TICKET_*
+├── .env.example         # DATABASE_URL, POSTGRES_*, AI_PERSONA, XP_*, WARN_*, WELCOME_*, AUTOMOD_*, TICKET_*
 ├── config/settings.py   # lê .env (dataclass Settings)
 ├── core/logger.py       # console + RotatingFile logs/bot.log
 ├── core/db.py           # engine async + init_db retry + get_session
